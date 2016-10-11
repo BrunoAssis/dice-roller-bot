@@ -1,10 +1,8 @@
 (ns dice-roller-bot.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
-
-(defn json-response [body] 
-  {:status 200 :headers {"Content-Type" "application/json"} :body body})
+            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.util.response :refer [response]]))
 
 (defn roll-dice [faces]
   (case faces
@@ -13,19 +11,15 @@
 
 (defn dice-response [quantity faces]
   (let [throws (into [] (repeatedly quantity #(roll-dice faces)))] 
-    (str "{"
-         "\"quantity\":" quantity ","
-         "\"faces\":\"" faces "\","
-         "\"throws\":\"" throws "\","
-         "\"sum\":" (reduce + throws)
-         "}")))
+    (response {:quantity quantity
+               :faces faces
+               :throws throws
+               :sum (reduce + throws)})))
 
 (defroutes app-routes
-  (GET "/" []
-       "Hello World")
   (GET "/dice/:quantity/:faces" [quantity faces]
-       (json-response (dice-response (Integer/parseInt quantity) faces)))
+       (dice-response (Integer/parseInt quantity) faces))
   (route/not-found "Not Found"))
 
 (def app
-  (wrap-defaults app-routes site-defaults))
+  (wrap-json-response app-routes))
