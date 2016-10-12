@@ -19,8 +19,9 @@
      :sum (reduce + throws)}))
 
 (defn generate-dice-message [dice-text]
-  (let [captures (re-find #"/(\d+)d(.*?)$" dice-text)
-        quantity (get captures 1)
+  (let [captures (re-find #"/(\d*)d(.*?)$" dice-text)
+        quantity-text (get captures 1)
+        quantity (if (= quantity-text "") "1" quantity-text)
         faces (get captures 2)
         dice (dice quantity faces)
         throws (get dice :throws)
