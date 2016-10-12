@@ -37,7 +37,12 @@
 
 (defroutes app-routes
   (POST "/botWebhook" {message :body}
-        (response (generate-bot-reply message)))
+        (.println System/out (str "MESSAGE: " message))
+        (let [res (if (contains? message "message")
+                    (generate-bot-reply message)
+                    {})]
+          (.println System/out (str "RES: " (response res)))
+          (response res)))
   (GET "/dice/:quantity/:faces" [quantity faces]
        (response (dice quantity faces)))
   (route/not-found "Not Found"))
