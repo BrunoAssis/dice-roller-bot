@@ -50,7 +50,9 @@
         (let [res (if (contains? message "message")
                     (generate-bot-reply message)
                     {})]
+          (.println System/out (str "MESSAGE: " message))
           (send-reply res)
+          (.println System/out (str "RESPONSE: " res))
           (response res)))
   (GET "/dice/:quantity/:faces" [quantity faces]
        (response (dice quantity faces)))
