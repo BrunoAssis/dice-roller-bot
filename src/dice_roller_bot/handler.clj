@@ -3,7 +3,12 @@
             [compojure.route :as route]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.util.response :refer [response]]
-            [clojure.string :refer [join]]))
+            [clojure.string :refer [join]]
+            [clj-http.client :as client]))
+
+(def API_KEY "274742262:AAG-W7GVsAlqD-E6ZsV0KH9jaWDcmQ0cUtw")
+(def API_URL (str "https://api.telegram.org/bot" API_KEY))
+(def SEND_MESSAGE_URL (str API_URL "/sendMessage"))
 
 (defn roll-dice [faces]
   (case faces
@@ -35,13 +40,17 @@
    :chat_id (get-in message ["message" "chat" "id"])
    :reply_to_message_id (get-in message ["message" "message_id"])})
 
+(defn send-reply [response]
+  (client/post SEND_MESSAGE_URL
+               {:form-params response
+                :content-type :json}))
+
 (defroutes app-routes
   (POST "/botWebhook" {message :body}
-        (.println System/out (str "MESSAGE: " message))
         (let [res (if (contains? message "message")
                     (generate-bot-reply message)
                     {})]
-          (.println System/out (str "RES: " (response res)))
+          (send-reply res)
           (response res)))
   (GET "/dice/:quantity/:faces" [quantity faces]
        (response (dice quantity faces)))
